@@ -74,15 +74,6 @@ def extract_representative_frames(mp4: str, out_dir: str,scene_threshold = 0.35,
         raise ValueError("min_gap must be > 0")
     if(max_gap <= 0):
         raise ValueError("max_gap must be > 0")
-    # Some strategy for taking frames.
-    # Explaination of \\ in select expression
-    # '''
-    # \\ trong code Python
-    # ↓
-    # \ trong chuỗi thực tế
-    # ↓
-    # \, gửi cho FFmpeg để escape dấu phẩy
-    # '''
     select_expr = (
     "isnan(prev_selected_t)"
     f"+gte(t-prev_selected_t\\,{min_gap})*gt(scene\\,{scene_threshold})"
