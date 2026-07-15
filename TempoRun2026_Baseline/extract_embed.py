@@ -17,7 +17,6 @@ from __future__ import annotations
 import argparse, glob, os, sys, time
 from pathlib import Path
 import numpy as np
-
 REPO_ROOT = Path(__file__).resolve().parents[0]
 sys.path.insert(0, str(REPO_ROOT))
 
@@ -54,6 +53,7 @@ def main():
     ap.add_argument("--shard-index", type=int, default=0)
     ap.add_argument("--shard-count", type=int, default=1)
     ap.add_argument("--limit", type=int, default=0, help="debug: cap #videos")
+    ap.add_argument("--pth_dir",default = "")
     args = ap.parse_args()
 
     shard_dir = Path(args.out) / "shards"
@@ -71,6 +71,8 @@ def main():
     from clip_model import ClipModel
     model = ClipModel(args.model, args.pretrained, device=args.device) # Sửa đoạn này nếu lấy file .pth
     print(f"[clip] {args.model}/{args.pretrained} on {args.device} dim={clip.dim}", flush=True)
+    if(args.pretrained == False):
+        model.load_state_dict(torch.load(args.pth_dir,weights_only = True))
 
     t0 = time.time(); done = nframes = failed = 0
     for vdir in mine:
