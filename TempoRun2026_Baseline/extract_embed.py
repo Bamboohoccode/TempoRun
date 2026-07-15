@@ -15,6 +15,7 @@ Shardable across processes/GPUs: --shard-index / --shard-count.
 """
 from __future__ import annotations
 import argparse, glob, os, sys, time
+import torch
 from pathlib import Path
 import numpy as np
 REPO_ROOT = Path(__file__).resolve().parents[0]
@@ -70,7 +71,7 @@ def main():
 
     from clip_model import ClipModel
     model = ClipModel(args.model, args.pretrained, device=args.device) # Sửa đoạn này nếu lấy file .pth
-    print(f"[clip] {args.model}/{args.pretrained} on {args.device} dim={clip.dim}", flush=True)
+    print(f"[clip] {args.model}/{args.pretrained} on {args.device} dim={model.dim}", flush=True)
     if(args.pretrained == False):
         model.load_state_dict(torch.load(args.pth_dir,weights_only = True))
 
