@@ -50,8 +50,8 @@ def main():
     print(f"[tasks] {len(tasks)}", flush=True)
 
     from clip_model import ClipModel
-    clip = ClipModel(args.model, args.pretrained, device=args.device)
-    Q = clip.encode_texts([t["description"] for t in tasks])      # [T, D] fp32
+    model = ClipModel(args.model, args.pretrained, device=args.device)
+    Q = model.encode_texts([t["description"] for t in tasks])      # [T, D] fp32
 
     dev = args.device
     idx = torch.from_numpy(emb).to(dev).half()                    # [N, D]
