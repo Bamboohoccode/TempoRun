@@ -15,7 +15,7 @@ class ClipModel:
         self.torch = torch
         self.device = device or ("cuda" if torch.cuda.is_available() else "cpu")
         self.model, _, self.preprocess = open_clip.create_model_and_transforms(
-            model_name, pretrained=(pretrained if pretrained else None) # Truyen False Vao pre_trained de load .pth
+            model_name, pretrained=(pretrained if pretrained else None)) # Truyen False Vao pre_trained de load .pth
         self.model = self.model.to(self.device).eval()
         self.tokenizer = open_clip.get_tokenizer(model_name)
         try:
@@ -23,6 +23,7 @@ class ClipModel:
             self.dim = int(tp.shape[1]) if hasattr(tp, "shape") else int(getattr(tp, "out_features", 512))
         except Exception:
             self.dim = 512
+        self.temperature = torch.ones(1)
 
     def encode_images(self, pil_images: list, batch_size=64) -> np.ndarray:
         torch = self.torch
