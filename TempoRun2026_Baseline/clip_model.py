@@ -5,26 +5,49 @@ from typing import Iterable
 import numpy as np
 
 
-class ClipModel:
-    def __init__(self, model_name="ViT-B-32", pretrained="laion2b_s34b_b79k", device=None):
-        import torch, open_clip
-        # Disable cuDNN: ViT-B-32 is almost all matmul; its single patch-embed conv
-        # otherwise needs a cuDNN workspace that fails ("unable to find an engine")
-        # when many processes share a busy GPU. Native conv needs no workspace.
-        torch.backends.cudnn.enabled = False
-        self.torch = torch
-        self.device = device or ("cuda" if torch.cuda.is_available() else "cpu")
-        self.model, _, self.preprocess = open_clip.create_model_and_transforms(
-            model_name, pretrained=(pretrained if pretrained else None)) # Truyen False Vao pre_trained de load .pth
-        self.model = self.model.to(self.device).eval()
-        self.tokenizer = open_clip.get_tokenizer(model_name)
-        try:
-            tp = getattr(self.model, "text_projection", None)
-            self.dim = int(tp.shape[1]) if hasattr(tp, "shape") else int(getattr(tp, "out_features", 512))
-        except Exception:
-            self.dim = 512
-        self.temperature = torch.ones(1)
+import math
 
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+import open_clip
+
+
+class ClipModel(nn.Module):
+    def __init__(
+        self,
+        model_name="PE-Core-bigG-14-448",
+        pretrained="meta",
+        precision="fp16",
+        device=None,
+    ):
+        super().__init__()
+
+        self.device = torch.device(
+            device or (
+                "cuda"
+                if torch.cuda.is_available()
+                else "cpu"
+            )
+        )
+
+        self.model, self.process_train, self.preprocess_val = (
+            open_clip.create_model_and_transforms(
+                model_name,
+                pretrained=pretrained,
+                precision=precision,
+            )
+        )
+
+        self.tokenizer = open_clip.get_tokenizer(model_name)
+
+
+        self.logit_scale = nn.Parameter(
+            torch.tensor(
+                math.log(1.0 / 0.07),
+                dtype=torch.float32,
+            ))
+        self.to(self.device)
     def encode_images(self, pil_images: list, batch_size=64) -> np.ndarray:
         torch = self.torch
         feats = []
@@ -46,4 +69,33 @@ class ClipModel:
                 f = self.model.encode_text(toks)
                 f = f / f.norm(dim=-1, keepdim=True)
                 feats.append(f.float().cpu().numpy().astype(np.float32))
+    
         return np.concatenate(feats, 0) if feats else np.zeros((0, self.dim), np.float32)
+    def forward(self, batch):
+        model_dtype = next(self.model.visual.parameters()).dtype
+        images = batch["image"].to(
+            device=self.device,
+            dtype=model_dtype,
+            non_blocking=True)
+        text_tokens = self.tokenizer(
+            batch["sentence"]).to(
+        self.device,
+        non_blocking=True)
+        image_features = self.model.encode_image(images,normalize=True)
+        text_features = self.model.encode_text(text_tokens,normalize=True)
+        scale = self.model.logit_scale.exp().clamp(max=100.0)
+        logits = (image_features @ text_features.T) * scale
+
+        targets = torch.arange(
+            logits.shape[0],
+            device=logits.device)
+
+        loss_i2t = F.cross_entropy(
+            logits,
+            targets)
+
+        loss_t2i = F.cross_entropy(
+            logits.T,
+            targets)
+        
+        return (loss_i2t + loss_t2i) / 2
