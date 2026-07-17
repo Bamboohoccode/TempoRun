@@ -31,28 +31,22 @@ class ClipModel(nn.Module):
             )
         )
 
-        self.model, self.process_train, self.preprocess_val = (
+        self.model, self.preprocess_train, self.preprocess_val = (
             open_clip.create_model_and_transforms(
                 model_name,
                 pretrained=pretrained,
                 precision=precision,
             )
         )
-
+        
         self.tokenizer = open_clip.get_tokenizer(model_name)
-
-
-        self.logit_scale = nn.Parameter(
-            torch.tensor(
-                math.log(1.0 / 0.07),
-                dtype=torch.float32,
-            ))
+        self.model.logit_scale.requires_grad_(True)        
         self.to(self.device)
     def encode_images(self, pil_images: list, batch_size=64) -> np.ndarray:
         torch = self.torch
         feats = []
         for i in range(0, len(pil_images), batch_size):
-            batch = [self.preprocess(im) for im in pil_images[i:i + batch_size]]
+            batch = [self.preprocess_val(im) for im in pil_images[i:i + batch_size]]
             with torch.no_grad():
                 x = torch.stack(batch).to(self.device)
                 f = self.model.encode_image(x)

@@ -42,6 +42,7 @@ def main():
     p.add_argument("--pretrained", default="laion2b_s34b_b79k")
     p.add_argument("--top-videos", type=int, default=10)
     p.add_argument("--cand-keyframes", type=int, default=400)
+    ap.add_argument("--pth_dir",default = "")
     args = p.parse_args()
 
     import torch
@@ -51,6 +52,8 @@ def main():
 
     from clip_model import ClipModel
     model = ClipModel(args.model, args.pretrained, device=args.device)
+    if(args.pretrained == False):
+        model.load_state_dict(torch.load(args.pth_dir,weights_only = True))
     Q = model.encode_texts([t["description"] for t in tasks])      # [T, D] fp32
 
     dev = args.device

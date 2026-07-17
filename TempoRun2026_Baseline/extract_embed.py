@@ -13,6 +13,7 @@ Output:
 Resumable: a video whose shard already exists is skipped.
 Shardable across processes/GPUs: --shard-index / --shard-count.
 """
+
 from __future__ import annotations
 import argparse, glob, os, sys, time
 import torch
@@ -72,7 +73,7 @@ def main():
     from clip_model import ClipModel
     model = ClipModel(args.model, args.pretrained, device=args.device) # Sửa đoạn này nếu lấy file .pth
     print(f"[clip] {args.model}/{args.pretrained} on {args.device} dim={model.dim}", flush=True)
-    if(args.pretrained == False):g
+    if(args.pretrained == False):
         # Load pth file
         model.load_state_dict(torch.load(args.pth_dir,weights_only = True))
 
