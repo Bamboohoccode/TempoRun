@@ -38,33 +38,35 @@ class ClipModel(nn.Module):
                 precision=precision,
             )
         )
-        
+        self.dim = self.model.visual.output_dim
+
         self.tokenizer = open_clip.get_tokenizer(model_name)
         self.model.logit_scale.requires_grad_(True)        
         self.to(self.device)
     def encode_images(self, pil_images: list, batch_size=64) -> np.ndarray:
-        torch = self.torch
         feats = []
+        model_dtype = next(self.model.visual.parameters()).dtype
         for i in range(0, len(pil_images), batch_size):
             batch = [self.preprocess_val(im) for im in pil_images[i:i + batch_size]]
             with torch.no_grad():
                 x = torch.stack(batch).to(self.device)
                 f = self.model.encode_image(x)
                 f = f / f.norm(dim=-1, keepdim=True)
-                feats.append(f.float().cpu().numpy().astype(np.float16))
-        return np.concatenate(feats, 0) if feats else np.zeros((0, self.dim), np.float16)
+                feats.append(f.float().cpu().numpy().astype(model_dtype))
+        return np.concatenate(feats, 0) if feats else np.zeros((0, self.dim), model_dtype)
 
     def encode_texts(self, texts: list[str], batch_size=256) -> np.ndarray:
-        torch = self.torch
         feats = []
+        model_dtype = next(self.model.visual.parameters()).dtype
         for i in range(0, len(texts), batch_size):
             toks = self.tokenizer(texts[i:i + batch_size]).to(self.device)
             with torch.no_grad():
                 f = self.model.encode_text(toks)
                 f = f / f.norm(dim=-1, keepdim=True)
-                feats.append(f.float().cpu().numpy().astype(np.float32))
+                feats.append(f.float().cpu().numpy().astype(model_dtype))
     
-        return np.concatenate(feats, 0) if feats else np.zeros((0, self.dim), np.float32)
+        return np.concatenate(feats, 0) if feats else np.zeros((0, self.dim), model_dtype)
+    
     def forward(self, batch):
         model_dtype = next(self.model.visual.parameters()).dtype
         images = batch["image"].to(
@@ -77,7 +79,7 @@ class ClipModel(nn.Module):
         non_blocking=True)
         image_features = self.model.encode_image(images,normalize=True)
         text_features = self.model.encode_text(text_tokens,normalize=True)
-        scale = self.model.logit_scale.exp().clamp(max=100.0)
+        scale = self.model.logit_scale.exp()
         logits = (image_features @ text_features.T) * scale
 
         targets = torch.arange(

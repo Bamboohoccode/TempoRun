@@ -54,6 +54,7 @@ def main():
     model = ClipModel(args.model, args.pretrained, device=args.device)
     if(args.pretrained == False):
         model.load_state_dict(torch.load(args.pth_dir,weights_only = True))
+    
     Q = model.encode_texts([t["description"] for t in tasks])      # [T, D] fp32
 
     dev = args.device
