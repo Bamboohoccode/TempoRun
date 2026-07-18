@@ -76,7 +76,17 @@ def main():
     if(args.pretrained == "None"):
         # Load pth file
         print("Loading weights ....")
-        model.load_state_dict(torch.load(args.pth_dir,weights_only = True))
+        device = torch.device(
+        args.device
+        if args.device.startswith("cuda") and torch.cuda.is_available()
+        else "cpu")
+
+    checkpoint = torch.load(
+        args.pth_dir,
+        map_location=device,
+        weights_only=True,)
+    model.load_state_dict(
+        checkpoint["model_state_dict"])
 
     t0 = time.time(); done = nframes = failed = 0
     for vdir in mine:
