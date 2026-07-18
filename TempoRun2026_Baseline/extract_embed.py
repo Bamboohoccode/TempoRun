@@ -72,7 +72,7 @@ def main():
 
     from clip_model import ClipModel
     model = ClipModel(args.model, args.pretrained, device=args.device) # Sửa đoạn này nếu lấy file .pth
-    print(f"[clip] {args.model}/{args.pretrained} on {args.device} dim={model.dim}", flush=True)
+    print(f"[clip] {args.model}/{args.pretrained} on {args.device} ", flush=True)
     if(args.pretrained == False):
         # Load pth file
         model.load_state_dict(torch.load(args.pth_dir,weights_only = True))

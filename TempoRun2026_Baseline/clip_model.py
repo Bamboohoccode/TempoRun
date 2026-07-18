@@ -38,7 +38,6 @@ class ClipModel(nn.Module):
                 precision=precision,
             )
         )
-        self.dim = self.model.visual.output_dim
 
         self.tokenizer = open_clip.get_tokenizer(model_name)
         self.model.logit_scale.requires_grad_(True)        
