@@ -71,21 +71,14 @@ def main():
     print(f"[shard {args.shard_index}/{args.shard_count}] {len(mine)}/{len(vdirs)} videos", flush=True)
 
     from clip_model import ClipModel
+    from LoRA import add_LoRA,Apply_weights
     model = ClipModel(args.model, args.pretrained, device=args.device) # Sửa đoạn này nếu lấy file .pth
     print(f"[clip] {args.model}/{args.pretrained} on {args.device} ", flush=True)
+    add_LoRA(model,rank = 8,alpha = 16)
+
     if(args.pretrained == "None"):
         # Load pth file
-        # Doan nay phai load tu gpu qua cpu nen luu checkpoint
-        print("Loading weights ....")
-        device = torch.device(
-        args.device
-        if args.device.startswith("cuda") and torch.cuda.is_available()
-        else "cpu")
-        checkpoint = torch.load(
-            args.pth_dir,
-            map_location=device,
-            weights_only=True,)
-        model.load_state_dict(checkpoint)
+        Apply_weights(model,args.device,args.pth_dir)
 
     t0 = time.time(); done = nframes = failed = 0
     for vdir in mine:

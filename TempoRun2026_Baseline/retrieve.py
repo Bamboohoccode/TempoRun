@@ -51,9 +51,13 @@ def main():
     print(f"[tasks] {len(tasks)}", flush=True)
 
     from clip_model import ClipModel
+    from LoRA import add_LoRA,Apply_weights
     model = ClipModel(args.model, args.pretrained, device=args.device)
-    if(args.pretrained == False):
-        model.load_state_dict(torch.load(args.pth_dir,weights_only = True))
+    add_LoRA(model,rank = 8,alpha = 16)
+
+    if(args.pretrained == "None"):
+        # Load pth file
+        Apply_weights(model,args.device,args.pth_dir)
     
     Q = model.encode_texts([t["description"] for t in tasks])      # [T, D] fp32
 
