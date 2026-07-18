@@ -34,7 +34,7 @@ class ClipModel(nn.Module):
         self.model, self.preprocess_train, self.preprocess_val = (
             open_clip.create_model_and_transforms(
                 model_name,
-                pretrained=pretrained,
+                pretrained=(pretrained if pretrained else None),
                 precision=precision,
             )
         )
