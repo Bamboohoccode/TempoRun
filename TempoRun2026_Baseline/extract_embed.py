@@ -74,7 +74,7 @@ def main():
     from LoRA import assign_LoRA,Apply_weights
     model = ClipModel(args.model, args.pretrained, device=args.device) # Sửa đoạn này nếu lấy file .pth
     print(f"[clip] {args.model}/{args.pretrained} on {args.device} ", flush=True)
-    assign_LoRA(model,rank = 8,alpha = 16)
+    assign_LoRA(model,lora_r= 8,lora_alpha=16)
 
     if(args.pretrained == "None"):
         # Load pth file
