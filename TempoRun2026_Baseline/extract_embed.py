@@ -71,10 +71,10 @@ def main():
     print(f"[shard {args.shard_index}/{args.shard_count}] {len(mine)}/{len(vdirs)} videos", flush=True)
 
     from clip_model import ClipModel
-    from LoRA import add_LoRA,Apply_weights
+    from LoRA import assign_LoRA,Apply_weights
     model = ClipModel(args.model, args.pretrained, device=args.device) # Sửa đoạn này nếu lấy file .pth
     print(f"[clip] {args.model}/{args.pretrained} on {args.device} ", flush=True)
-    add_LoRA(model,rank = 8,alpha = 16)
+    assign_LoRA(model,rank = 8,alpha = 16)
 
     if(args.pretrained == "None"):
         # Load pth file

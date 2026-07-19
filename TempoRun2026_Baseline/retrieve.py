@@ -51,9 +51,9 @@ def main():
     print(f"[tasks] {len(tasks)}", flush=True)
 
     from clip_model import ClipModel
-    from LoRA import add_LoRA,Apply_weights
+    from LoRA import     assign_LoRA,Apply_weights
     model = ClipModel(args.model, args.pretrained, device=args.device)
-    add_LoRA(model,rank = 8,alpha = 16)
+    assign_LoRA(model,rank = 8,alpha = 16)
 
     if(args.pretrained == "None"):
         # Load pth file
