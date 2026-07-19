@@ -101,7 +101,7 @@ def assign_LoRA(model,
         model.model.visual.trunk.attn_pool.kv = add_LoRA(model.model.visual.trunk.attn_pool.kv,rank = lora_r,alpha = lora_alpha)
     if(LoRA_attnP_proj):
         model.model.visual.trunk.attn_pool.proj = add_LoRA(model.model.visual.trunk.attn_pool.proj,rank = lora_r,alpha = lora_alpha)
-    if LoRA_attnP_mlpadd_LoRA:
+    if LoRA_attnP_mlp:
         model.model.visual.trunk.attn_pool.mlp.fc1 = add_LoRA(model.model.visual.trunk.attn_pool.mlp.fc1,rank = lora_r,alpha = lora_alpha)
         model.model.visual.trunk.attn_pool.mlp.fc2 = add_LoRA(model.model.visual.trunk.attn_pool.mlp.fc2,rank = lora_r,alpha = lora_alpha)
     if(LoRA_head):
