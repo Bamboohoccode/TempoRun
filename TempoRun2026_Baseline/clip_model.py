@@ -50,7 +50,7 @@ class ClipModel(nn.Module):
         self.to(self.device)
     def encode_images(self, pil_images: list, batch_size=64) -> np.ndarray:
         feats = []
-        model_dtype = self.torch_to_np(next(self.model.visual.parameters()).dtype)
+        model_dtype = self.torch_to_np[next(self.model.visual.parameters()).dtype]
         for i in range(0, len(pil_images), batch_size):
             batch = [self.preprocess_val(im) for im in pil_images[i:i + batch_size]]
             with torch.no_grad():
@@ -62,7 +62,7 @@ class ClipModel(nn.Module):
 
     def encode_texts(self, texts: list[str], batch_size=256) -> np.ndarray:
         feats = []
-        model_dtype = self.torch_to_np(next(self.model.visual.parameters()).dtype)
+        model_dtype = self.torch_to_np[next(self.model.visual.parameters()).dtype]
         for i in range(0, len(texts), batch_size):
             toks = self.tokenizer(texts[i:i + batch_size]).to(self.device)
             with torch.no_grad():
