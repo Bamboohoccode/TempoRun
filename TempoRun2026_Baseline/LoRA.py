@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import numpy as np
 from functools import partial
+from clip_model import ClipModel
 class LoRALayer(nn.Module):
     def __init__(self, layer, rank, alpha):
         super().__init__()
@@ -100,7 +101,7 @@ def assign_LoRA(model,
         model.model.visual.trunk.attn_pool.kv = add_LoRA(model.model.visual.trunk.attn_pool.kv,rank = lora_r,alpha = lora_alpha)
     if(LoRA_attnP_proj):
         model.model.visual.trunk.attn_pool.proj = add_LoRA(model.model.visual.trunk.attn_pool.proj,rank = lora_r,alpha = lora_alpha)
-    if LoRA_attnP_mlp:
+    if LoRA_attnP_mlpadd_LoRA:
         model.model.visual.trunk.attn_pool.mlp.fc1 = add_LoRA(model.model.visual.trunk.attn_pool.mlp.fc1,rank = lora_r,alpha = lora_alpha)
         model.model.visual.trunk.attn_pool.mlp.fc2 = add_LoRA(model.model.visual.trunk.attn_pool.mlp.fc2,rank = lora_r,alpha = lora_alpha)
     if(LoRA_head):
@@ -110,5 +111,12 @@ def assign_LoRA(model,
         if(LoRA_text_mlp):
             layer.mlp.c_fc = add_LoRA(layer.mlp.c_fc,rank = lora_r,alpha = lora_alpha)
             layer.mlp.c_proj = add_LoRA(layer.mlp.c_proj,rank = lora_r,alpha = lora_alpha)
-    return model
 
+def Apply_weights(model,device,pth_dir):
+    print("Loading weights ....")
+
+    checkpoint = torch.load(
+        pth_dir,
+        map_location=device,
+        weights_only=True,)
+    model.load_state_dict(checkpoint)
