@@ -38,6 +38,11 @@ class ClipModel(nn.Module):
                 precision=precision,
             )
         )
+        self.torch_to_np = {
+        torch.float16: np.float16,
+        torch.float32: np.float32,
+        torch.float64: np.float64,
+        torch.bfloat16: np.float32}
 
         self.tokenizer = open_clip.get_tokenizer(model_name)
         self.model.logit_scale.requires_grad_(True)        
@@ -52,7 +57,7 @@ class ClipModel(nn.Module):
                 f = self.model.encode_image(x)
                 f = f / f.norm(dim=-1, keepdim=True)
                 feats.append(f.float().cpu().numpy().astype(model_dtype))
-        return np.concatenate(feats, 0) if feats else np.zeros((0, self.dim), model_dtype)
+        return np.concatenate(feats, 0) if feats else np.zeros((0, self.dim), self.torch_to_np(model_dtype))
 
     def encode_texts(self, texts: list[str], batch_size=256) -> np.ndarray:
         feats = []
@@ -64,7 +69,7 @@ class ClipModel(nn.Module):
                 f = f / f.norm(dim=-1, keepdim=True)
                 feats.append(f.float().cpu().numpy().astype(model_dtype))
     
-        return np.concatenate(feats, 0) if feats else np.zeros((0, self.dim), model_dtype)
+        return np.concatenate(feats, 0) if feats else np.zeros((0, self.dim), self.torch_to_np(model_dtype))
     
     def forward(self, batch):
         model_dtype = next(self.model.visual.parameters()).dtype
