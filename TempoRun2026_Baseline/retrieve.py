@@ -53,10 +53,10 @@ def main():
     from clip_model import ClipModel
     from LoRA import     assign_LoRA,Apply_weights
     model = ClipModel(args.model, args.pretrained, device=args.device)
-    assign_LoRA(model,lora_r= 8,lora_alpha=16)
 
     if(args.pretrained == "None"):
         # Load pth file
+        assign_LoRA(model,lora_r= 8,lora_alpha=16)
         Apply_weights(model,args.device,args.pth_dir)
     
     Q = model.encode_texts([t["description"] for t in tasks])      # [T, D] fp32
