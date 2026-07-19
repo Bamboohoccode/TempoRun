@@ -43,7 +43,7 @@ class ClipModel(nn.Module):
         torch.float32: np.float32,
         torch.float64: np.float64,
         torch.bfloat16: np.float32}
-        self.dim = self.model.visual.output_dim
+        self.dim = 1024
 
         self.tokenizer = open_clip.get_tokenizer(model_name)
         self.model.logit_scale.requires_grad_(True)        
