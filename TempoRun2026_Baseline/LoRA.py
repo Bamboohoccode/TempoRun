@@ -120,5 +120,5 @@ def Apply_weights(model,device,pth_dir):
         map_location=device,
         weights_only=True,)
     model.load_state_dict(checkpoint)
-    model = model.float()
-    model.eval()
+    model = model.float().to(device)
+    print(f"Data type cua model la: {next(model.parameters()).dtype}")
